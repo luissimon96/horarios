@@ -1,0 +1,82 @@
+name: Deploy GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout production branch
+        uses: actions/checkout@v5
+        with:
+          ref: main
+          path: production
+
+      - name: Checkout development branch
+        uses: actions/checkout@v5
+        with:
+          ref: develop
+          path: development
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Validate production runtime files
+        run: |
+          test -f production/index.html
+          test -f production/manifest.webmanifest
+          test -f production/sw.js
+          test -f production/vendor/leaflet.js
+          test -f production/icons/icon-192.png
+          test -f production/icons/icon-512.png
+          if [ -f production/package.json ]; then npm --prefix production run validate; fi
+
+      - name: Validate development branch
+        run: npm --prefix development run validate
+
+      - name: Prepare site artifact
+        run: |
+          mkdir -p _site/dev
+          cp production/index.html production/manifest.webmanifest production/sw.js production/.nojekyll _site/
+          cp -R production/icons production/vendor _site/
+          if [ -d production/src ]; then cp -R production/src _site/; fi
+          cp development/index.html development/manifest.webmanifest development/sw.js development/.nojekyll _site/dev/
+          cp -R development/icons development/src development/vendor _site/dev/
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

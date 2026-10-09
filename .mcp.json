@@ -1,0 +1,24 @@
+{
+  "mcpServers": {
+    "mcp-graph": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@mcp-graph-workflow/mcp-graph"
+      ]
+    },
+    "context7": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@upstash/context7-mcp"
+      ]
+    },
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "@playwright/mcp@latest"
+      ]
+    }
+  }
+}

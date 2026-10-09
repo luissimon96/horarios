@@ -1,0 +1,14 @@
+{
+  "name": "foztrans-horarios",
+  "version": "1.0.0",
+  "private": true,
+  "description": "PWA de linhas, horários e rotas de ônibus de Foz do Iguaçu",
+  "scripts": {
+    "start": "python -m http.server 8000",
+    "validate": "node scripts/validate.mjs",
+    "test": "npm run validate"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
